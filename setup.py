@@ -1,6 +1,8 @@
-#!/usr/bin/env python
+from setuptools import setup, find_packages
+
+def setup_package():
+    setup(name="spacy-huggingface-hub", packages=find_packages())
+
 
 if __name__ == "__main__":
-    from setuptools import setup, find_packages
-
-    setup(name="spacy_huggingface_hub", packages=find_packages())
+    setup_package()

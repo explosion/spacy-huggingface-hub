@@ -176,6 +176,7 @@ def push(
             exist_ok=True,
         )
     repo = Repository(repo_local_path, clone_from=repo_url)
+    repo.git_pull(rebase=True)
     repo.lfs_track(["*.whl", "*.npz", "*strings.json", "vectors"])
 
     # Extract information from whl file
@@ -190,6 +191,10 @@ def push(
     extracted_dir = os.path.join(repo_local_path, versioned_name)
     for filename in os.listdir(extracted_dir):
         dst = os.path.join(repo_local_path, filename)
+        if os.path.isdir(dst):
+            shutil.rmtree(dst)
+        elif os.path.isfile(dst):
+            os.remove(dst)
         shutil.move(os.path.join(extracted_dir, filename), dst)
     shutil.rmtree(os.path.join(repo_local_path, versioned_name))
 
