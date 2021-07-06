@@ -43,21 +43,21 @@ def huggingface_hub_push_cli(
     whl_path: Path = typer.Argument(..., help="Path to whl file", exists=True),
     organization: Optional[str] = typer.Option(None, "--org", "-o", help="Name of organization to which the pipeline should be uploaded"),
     commit_msg: str = typer.Option("Update spaCy pipeline", "--msg", "-m", help="Commit message to use for update"),
-    repo_path: Path = typer.Option("hub", "--repo-path", "-r", help="Local path for creating repo"),
+    local_repo_path: Path = typer.Option("hub", "--local-repo", "-l", help="Local path for creating repo"),
     verbose: bool = typer.Option(False, "--verbose", "-V", help="Output additional info for debugging, e.g. the full generated hub metadata"),
     # fmt: on
 ):
     """
     Push a spaCy pipeline (.whl) to the Hugging Face Hub.
     """
-    push(whl_path, organization, commit_msg, repo_path, verbose=verbose)
+    push(whl_path, organization, commit_msg, local_repo_path, verbose=verbose)
 
 
 def push(
     whl_path: Union[str, Path],
     namespace: Optional[str] = None,
     commit_msg: str = "Update spaCy pipeline",
-    repo_path: Union[Path, str] = "hub",
+    local_repo_path: Union[Path, str] = "hub",
     *,
     silent: bool = False,
     verbose: bool = False,
@@ -69,7 +69,7 @@ def push(
     filename = whl_path.stem
     repo_name, version, _, _, _ = filename.split("-")
     versioned_name = repo_name + "-" + version
-    repo_local_path = Path(repo_path) / repo_name
+    repo_local_path = Path(local_repo_path) / repo_name
 
     # Create the repo (or clone its content if it's nonempty)
     api = HfApi()
@@ -95,7 +95,7 @@ def push(
         base_name = Path(repo_name) / versioned_name
         for file_name in zip_ref.namelist():
             if file_name.startswith(str(base_name)):
-                zip_ref.extract(file_name, repo_path)
+                zip_ref.extract(file_name, local_repo_path)
     msg.good("Extracted information from .whl file")
 
     # Move files up one directory

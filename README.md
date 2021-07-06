@@ -63,13 +63,13 @@ python -m spacy huggingface-hub push [whl_path] [--org] [--msg] [--repo-path] [-
 python -m spacy_huggingface_hub push [whl_path] [--org] [--msg] [--repo-path] [--verbose]
 ```
 
-| Argument            | Type         | Description                                                                                                                   |
-| ------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| `whl_path`          | str / `Path` | The path to the `.whl` file packaged with [`spacy package`](https://spacy.io/api/cli#package).                                |
-| `--org`, `-o`       | str          | Optional name of organization to which the pipeline should be uploaded.                                                       |
-| `--msg`, `-m`       | str          | Commit message to use for update. Defaults to `"Update spaCy pipeline"`.                                                      |
-| `--repo-path`, `-r` | str / `Path` | Local path to the model repository (will be created if it doesn't exist). Defaults to `hub` in the current working directory. |
-| `--verbose`, `-V`   | bool         | Output additional info for debugging, e.g. the full generated hub metadata.                                                   |
+| Argument             | Type         | Description                                                                                                                   |
+| -------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| `whl_path`           | str / `Path` | The path to the `.whl` file packaged with [`spacy package`](https://spacy.io/api/cli#package).                                |
+| `--org`, `-o`        | str          | Optional name of organization to which the pipeline should be uploaded.                                                       |
+| `--msg`, `-m`        | str          | Commit message to use for update. Defaults to `"Update spaCy pipeline"`.                                                      |
+| `--local-repo`, `-l` | str / `Path` | Local path to the model repository (will be created if it doesn't exist). Defaults to `hub` in the current working directory. |
+| `--verbose`, `-V`    | bool         | Output additional info for debugging, e.g. the full generated hub metadata.                                                   |
 
 ### Usage from Python
 
