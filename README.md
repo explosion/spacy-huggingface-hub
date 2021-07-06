@@ -16,7 +16,7 @@ The [Hugging Face Hub](https://huggingface.co/) hosts Git-based repositories whi
 You can install `spacy-huggingface-hub` from pip:
 
 ```bash
-pip install spacy-huggingface_hub
+pip install spacy-huggingface-hub
 ```
 
 To check if the command has been registered successfully:
