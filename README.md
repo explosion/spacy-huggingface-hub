@@ -56,11 +56,11 @@ If spaCy is already installed in the same environment, this package automaticall
 ### `push`
 
 ```bash
-python -m spacy huggingface-hub push [whl_path] [--org] [--msg] [--repo-path] [--verbose]
+python -m spacy huggingface-hub push [whl_path] [--org] [--msg] [--local-repo] [--verbose]
 ```
 
 ```bash
-python -m spacy_huggingface_hub push [whl_path] [--org] [--msg] [--repo-path] [--verbose]
+python -m spacy_huggingface_hub push [whl_path] [--org] [--msg] [--local-repo] [--verbose]
 ```
 
 | Argument             | Type         | Description                                                                                                                   |
