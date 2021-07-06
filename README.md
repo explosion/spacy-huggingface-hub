@@ -4,8 +4,8 @@
 
 This package provides a CLI command for uploading any trained spaCy pipeline packaged with [`spacy package`](https://spacy.io/api/cli#package) to the [Hugging Face Hub](https://huggingface.co/). It auto-generates all meta information for you, uploads a pretty README (requires spaCy v3.1+) and handles version control under the hood.
 
-[![PyPi](https://img.shields.io/pypi/v/spacy-huggingface-hub.svg?style=flat-square&logo=pypi&logoColor=white)](https://pypi.python.org/pypi/spacy-transformers)
-[![GitHub](https://img.shields.io/github/release/explosion/spacy-huggingface-hub/all.svg?style=flat-square&logo=github)](https://github.com/explosion/spacy-transformers/releases)
+[![PyPi](https://img.shields.io/pypi/v/spacy-huggingface-hub.svg?style=flat-square&logo=pypi&logoColor=white)](https://pypi.python.org/pypi/spacy-huggingface-hub)
+[![GitHub](https://img.shields.io/github/release/explosion/spacy-huggingface-hub/all.svg?style=flat-square&logo=github)](https://github.com/explosion/spacy-huggingface-hub/releases)
 
 ## 🤗 About the Hugging Face Hub
 
