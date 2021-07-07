@@ -66,6 +66,12 @@ def push(
     whl_path = Path(whl_path)
     if not whl_path.exists():
         msg.fail(f"Can't find wheel path: {whl_path}", exits=1)
+    if whl_path.suffix != ".whl":
+        msg.fail(
+            f"Not a valid .whl file: {whl_path}. Make sure to run `spacy "
+            "package` with `--build wheel` to generate a wheel for you pipeline.",
+            exits=1,
+        )
     filename = whl_path.stem
     repo_name, version, _, _, _ = filename.split("-")
     versioned_name = repo_name + "-" + version
