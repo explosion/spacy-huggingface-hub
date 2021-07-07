@@ -269,4 +269,4 @@ def _create_model_index(repo_name: str, data: Dict[str, Any]) -> Dict[str, Any]:
             }
         )
     model_index["results"] = results
-    return model_index
+    return [model_index]
