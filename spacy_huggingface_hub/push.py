@@ -204,7 +204,7 @@ def _create_p_r_f_list(
     return [precision, recall, f_score]
 
 
-def _create_model_index(repo_name: str, data: Dict[str, Any]) -> Dict[str, Any]:
+def _create_model_index(repo_name: str, data: Dict[str, Any]) -> List[Dict[str, Any]]:
     # TODO: add some more metrics here
     model_index = {"name": repo_name}
     results = []
