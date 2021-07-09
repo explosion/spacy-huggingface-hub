@@ -90,7 +90,7 @@ def push(
     repo = Repository(repo_local_path, clone_from=repo_url)
     repo.git_pull(rebase=True)
     # TODO: Are there other files we need to add here?
-    repo.lfs_track(["*.whl", "*.npz", "*strings.json", "vectors"])
+    repo.lfs_track(["*.whl", "*.npz", "*strings.json", "vectors", "model"])
     info_msg = f"Publishing to repository '{repo_name}'"
     if namespace is not None:
         info_msg += f" ({namespace})"
@@ -100,7 +100,7 @@ def push(
     with zipfile.ZipFile(whl_path, "r") as zip_ref:
         base_name = Path(repo_name) / versioned_name
         for file_name in zip_ref.namelist():
-            if file_name.startswith(str(base_name)):
+            if str(Path(file_name)).startswith(str(base_name)):
                 zip_ref.extract(file_name, local_repo_path)
     msg.good("Extracted information from .whl file")
 
