@@ -75,7 +75,6 @@ def push(
     filename = whl_path.stem
     repo_name, version, _, _, _ = filename.split("-")
     versioned_name = repo_name + "-" + version
-
     repo_local_path = Path(local_repo_path) / repo_name
 
     # Create the repo (or clone its content if it's nonempty)
