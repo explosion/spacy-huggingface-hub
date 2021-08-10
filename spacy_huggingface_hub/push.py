@@ -75,6 +75,7 @@ def push(
     filename = whl_path.stem
     repo_name, version, _, _, _ = filename.split("-")
     versioned_name = repo_name + "-" + version
+
     repo_local_path = Path(local_repo_path) / repo_name
 
     # Create the repo (or clone its content if it's nonempty)
@@ -104,16 +105,17 @@ def push(
                 zip_ref.extract(file_name, local_repo_path)
     msg.good("Extracted information from .whl file")
 
-    # Move files up one directory
-    extracted_dir = repo_local_path / versioned_name
-    for filename in extracted_dir.iterdir():
-        dst = repo_local_path / filename.name
-        if dst.is_dir():
-            shutil.rmtree(str(dst))
-        elif dst.is_file():
-            dst.unlink()
-        shutil.move(str(filename), str(dst))
-    shutil.rmtree(str(extracted_dir))
+    # Move files up one directory when repo is not from HF
+    if version != "any":
+        extracted_dir = repo_local_path / versioned_name
+        for filename in extracted_dir.iterdir():
+            dst = repo_local_path / filename.name
+            if dst.is_dir():
+                shutil.rmtree(str(dst))
+            elif dst.is_file():
+                dst.unlink()
+            shutil.move(str(filename), str(dst))
+        shutil.rmtree(str(extracted_dir))
 
     # Create model card, including HF tags
     metadata = _create_model_card(repo_name, repo_local_path)
@@ -202,11 +204,11 @@ def _create_metric(name: str, t: str, value: float) -> Dict[str, Union[str, floa
 
 
 def _create_p_r_f_list(
-    precision: float, recall: float, f_score: float
+    metric_name: str, precision: float, recall: float, f_score: float
 ) -> List[Dict[str, Union[str, float]]]:
-    precision = _create_metric("Precision", "precision", precision)
-    recall = _create_metric("Recall", "recall", recall)
-    f_score = _create_metric("F Score", "f_score", f_score)
+    precision = _create_metric(f"{metric_name} Precision", "precision", precision)
+    recall = _create_metric(f"{metric_name} Recall", "recall", recall)
+    f_score = _create_metric(f"{metric_name} F Score", "f_score", f_score)
     return [precision, recall, f_score]
 
 
@@ -217,61 +219,61 @@ def _create_model_index(repo_name: str, data: Dict[str, Any]) -> List[Dict[str, 
     if "ents_p" in data:
         results.append(
             {
-                "tasks": {
+                "task": {
                     "name": "NER",
-                    "type": "token-classification",
-                    "metrics": _create_p_r_f_list(
-                        data["ents_p"], data["ents_r"], data["ents_f"]
-                    ),
-                }
+                    "type": "token-classification"
+                },
+                "metrics": _create_p_r_f_list(
+                    "NER", data["ents_p"], data["ents_r"], data["ents_f"]
+                ),
             }
         )
     if "tag_acc" in data:
         results.append(
             {
-                "tasks": {
+                "task": {
                     "name": "POS",
-                    "type": "token-classification",
-                    "metrics": [
-                        _create_metric("Accuracy", "accuracy", data["tag_acc"])
-                    ],
-                }
+                    "type": "token-classification"
+                },
+                "metrics": [
+                    _create_metric("POS Accuracy", "accuracy", data["tag_acc"])
+                ],
             }
         )
     if "sents_p" in data:
         results.append(
             {
-                "tasks": {
+                "task": {
                     "name": "SENTER",
-                    "type": "token-classification",
-                    "metrics": _create_p_r_f_list(
-                        data["sents_p"], data["sents_r"], data["sents_f"]
-                    ),
-                }
+                    "type": "token-classification"
+                },
+                "metrics": _create_p_r_f_list(
+                    "SENTER", data["sents_p"], data["sents_r"], data["sents_f"]
+                ),
             }
         )
     if "dep_uas" in data:
         results.append(
             {
-                "tasks": {
+                "task": {
                     "name": "UNLABELED_DEPENDENCIES",
-                    "type": "token-classification",
-                    "metrics": [
-                        _create_metric("Accuracy", "accuracy", data["dep_uas"])
-                    ],
-                }
+                    "type": "token-classification"
+                },
+                "metrics": [
+                    _create_metric("Unlabeled Dependencies Accuracy", "accuracy", data["dep_uas"])
+                ],
             }
         )
     if "dep_las" in data:
         results.append(
             {
-                "tasks": {
+                "task": {
                     "name": "LABELED_DEPENDENCIES",
                     "type": "token-classification",
-                    "metrics": [
-                        _create_metric("Accuracy", "accuracy", data["dep_uas"])
-                    ],
-                }
+                },
+                "metrics": [
+                    _create_metric("Labeled Dependencies Accuracy", "accuracy", data["dep_uas"])
+                ],
             }
         )
     model_index["results"] = results
