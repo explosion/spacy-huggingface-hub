@@ -143,7 +143,7 @@ def _create_model_card(repo_name: str, repo_dir: Path) -> Dict[str, Any]:
     with meta_path.open("r", encoding="utf-8") as f:
         data = json.load(f)
     lang = data["lang"] if data["lang"] != "xx" else "multilingual"
-    lic = data.get("license", "").replace(" ", "-")
+    lic = data.get("license", "").replace(" ", "-").lower()
     tags = ["spacy"]
     for component in data["components"]:
         if (
