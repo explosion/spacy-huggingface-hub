@@ -143,7 +143,11 @@ def _create_model_card(repo_name: str, repo_dir: Path) -> Dict[str, Any]:
     with meta_path.open("r", encoding="utf-8") as f:
         data = json.load(f)
     lang = data["lang"] if data["lang"] != "xx" else "multilingual"
+
     lic = data.get("license", "").replace(" ", "-").lower()
+    # HF accepts gpl-3.0 directly
+    lic = lic.replace("gnu-", "")
+
     tags = ["spacy"]
     for component in data["components"]:
         if (
