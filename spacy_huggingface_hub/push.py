@@ -129,6 +129,7 @@ def push(
 
     msg.text("Pushing repository to the hub...")
     url = repo.push_to_hub(commit_message=commit_msg)
+    print(url)
     url, _ = url.split("/commit/")
     msg.good(f"Pushed repository '{repo_name}' to the hub")
     whl_url = f"{url}/resolve/main/{repo_name}-any-py3-none-any.whl"
@@ -246,15 +247,6 @@ def _create_model_index(repo_name: str, data: Dict[str, Any]) -> List[Dict[str, 
                 ],
             }
         )
-    if "lemma_acc" in data:
-        results.append(
-            {
-                "task": {"name": "LEMMA", "type": "token-classification"},
-                "metrics": [
-                    _create_metric("Lemma Accuracy", "accuracy", data["lemma_acc"])
-                ],
-            }
-        )
     if "morph_acc" in data:
         results.append(
             {
@@ -266,13 +258,13 @@ def _create_model_index(repo_name: str, data: Dict[str, Any]) -> List[Dict[str, 
                 ],
             }
         )
-    if "sents_p" in data:
+    if "lemma_acc" in data:
         results.append(
             {
-                "task": {"name": "SENTS", "type": "token-classification"},
-                "metrics": _create_p_r_f_list(
-                    "Sentences", data["sents_p"], data["sents_r"], data["sents_f"]
-                ),
+                "task": {"name": "LEMMA", "type": "token-classification"},
+                "metrics": [
+                    _create_metric("Lemma Accuracy", "accuracy", data["lemma_acc"])
+                ],
             }
         )
     if "dep_uas" in data:
@@ -300,6 +292,17 @@ def _create_model_index(repo_name: str, data: Dict[str, Any]) -> List[Dict[str, 
                     _create_metric(
                         "Labeled Attachment Score (LAS)", "f_score", data["dep_las"]
                     )
+                ],
+            }
+        )
+    if "sents_p" in data:
+        results.append(
+            {
+                "task": {"name": "SENTS", "type": "token-classification"},
+                "metrics": [
+                    _create_metric(
+                        "Sentences F-Score", "f_score", data["sents_f"]
+                    ),
                 ],
             }
         )
