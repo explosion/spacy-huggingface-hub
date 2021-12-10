@@ -129,7 +129,6 @@ def push(
 
     msg.text("Pushing repository to the hub...")
     url = repo.push_to_hub(commit_message=commit_msg)
-    print(url)
     url, _ = url.split("/commit/")
     msg.good(f"Pushed repository '{repo_name}' to the hub")
     whl_url = f"{url}/resolve/main/{repo_name}-any-py3-none-any.whl"
