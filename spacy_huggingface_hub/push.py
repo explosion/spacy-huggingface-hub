@@ -129,6 +129,7 @@ def push(
 
     msg.text("Pushing repository to the hub...")
     url = repo.push_to_hub(commit_message=commit_msg)
+    print(url)
     url, _ = url.split("/commit/")
     msg.good(f"Pushed repository '{repo_name}' to the hub")
     whl_url = f"{url}/resolve/main/{repo_name}-any-py3-none-any.whl"
@@ -222,10 +223,7 @@ def _create_model_index(repo_name: str, data: Dict[str, Any]) -> List[Dict[str, 
     if "ents_p" in data:
         results.append(
             {
-                "task": {
-                    "name": "NER",
-                    "type": "token-classification"
-                },
+                "task": {"name": "NER", "type": "token-classification"},
                 "metrics": _create_p_r_f_list(
                     "NER", data["ents_p"], data["ents_r"], data["ents_f"]
                 ),
@@ -234,25 +232,39 @@ def _create_model_index(repo_name: str, data: Dict[str, Any]) -> List[Dict[str, 
     if "tag_acc" in data:
         results.append(
             {
-                "task": {
-                    "name": "POS",
-                    "type": "token-classification"
-                },
+                "task": {"name": "TAG", "type": "token-classification"},
                 "metrics": [
-                    _create_metric("POS Accuracy", "accuracy", data["tag_acc"])
+                    _create_metric("TAG (XPOS) Accuracy", "accuracy", data["tag_acc"])
                 ],
             }
         )
-    if "sents_p" in data:
+    if "pos_acc" in data:
         results.append(
             {
-                "task": {
-                    "name": "SENTER",
-                    "type": "token-classification"
-                },
-                "metrics": _create_p_r_f_list(
-                    "SENTER", data["sents_p"], data["sents_r"], data["sents_f"]
-                ),
+                "task": {"name": "POS", "type": "token-classification"},
+                "metrics": [
+                    _create_metric("POS (UPOS) Accuracy", "accuracy", data["pos_acc"])
+                ],
+            }
+        )
+    if "morph_acc" in data:
+        results.append(
+            {
+                "task": {"name": "MORPH", "type": "token-classification"},
+                "metrics": [
+                    _create_metric(
+                        "Morph (UFeats) Accuracy", "accuracy", data["morph_acc"]
+                    )
+                ],
+            }
+        )
+    if "lemma_acc" in data:
+        results.append(
+            {
+                "task": {"name": "LEMMA", "type": "token-classification"},
+                "metrics": [
+                    _create_metric("Lemma Accuracy", "accuracy", data["lemma_acc"])
+                ],
             }
         )
     if "dep_uas" in data:
@@ -260,10 +272,12 @@ def _create_model_index(repo_name: str, data: Dict[str, Any]) -> List[Dict[str, 
             {
                 "task": {
                     "name": "UNLABELED_DEPENDENCIES",
-                    "type": "token-classification"
+                    "type": "token-classification",
                 },
                 "metrics": [
-                    _create_metric("Unlabeled Dependencies Accuracy", "accuracy", data["dep_uas"])
+                    _create_metric(
+                        "Unlabeled Attachment Score (UAS)", "f_score", data["dep_uas"]
+                    )
                 ],
             }
         )
@@ -275,7 +289,20 @@ def _create_model_index(repo_name: str, data: Dict[str, Any]) -> List[Dict[str, 
                     "type": "token-classification",
                 },
                 "metrics": [
-                    _create_metric("Labeled Dependencies Accuracy", "accuracy", data["dep_uas"])
+                    _create_metric(
+                        "Labeled Attachment Score (LAS)", "f_score", data["dep_las"]
+                    )
+                ],
+            }
+        )
+    if "sents_p" in data:
+        results.append(
+            {
+                "task": {"name": "SENTS", "type": "token-classification"},
+                "metrics": [
+                    _create_metric(
+                        "Sentences F-Score", "f_score", data["sents_f"]
+                    ),
                 ],
             }
         )
