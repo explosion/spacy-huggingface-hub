@@ -4,8 +4,9 @@ import zipfile
 import shutil
 import json
 import yaml
-from huggingface_hub import Repository, HfApi, HfFolder
+from huggingface_hub import HfApi, upload_folder, whoami
 from pathlib import Path
+import tempfile
 from wasabi import Printer
 
 # Allow using the package without spaCy being installed
@@ -43,21 +44,19 @@ def huggingface_hub_push_cli(
     whl_path: Path = typer.Argument(..., help="Path to whl file", exists=True),
     organization: Optional[str] = typer.Option(None, "--org", "-o", help="Name of organization to which the pipeline should be uploaded"),
     commit_msg: str = typer.Option("Update spaCy pipeline", "--msg", "-m", help="Commit message to use for update"),
-    local_repo_path: Path = typer.Option("hub", "--local-repo", "-l", help="Local path for creating repo"),
     verbose: bool = typer.Option(False, "--verbose", "-V", help="Output additional info for debugging, e.g. the full generated hub metadata"),
     # fmt: on
 ):
     """
     Push a spaCy pipeline (.whl) to the Hugging Face Hub.
     """
-    push(whl_path, organization, commit_msg, local_repo_path, verbose=verbose)
+    push(whl_path, organization, commit_msg, verbose=verbose)
 
 
 def push(
     whl_path: Union[str, Path],
     namespace: Optional[str] = None,
     commit_msg: str = "Update spaCy pipeline",
-    local_repo_path: Union[Path, str] = "hub",
     *,
     silent: bool = False,
     verbose: bool = False,
@@ -74,38 +73,38 @@ def push(
         )
     filename = whl_path.stem
     repo_name, version, _, _, _ = filename.split("-")
-    versioned_name = repo_name + "-" + version
-    repo_local_path = Path(local_repo_path) / repo_name
+
+    if namespace is None:
+        namespace = whoami()["name"]
+    repo_id = f"{namespace}/{repo_name}"
 
     # Create the repo (or clone its content if it's nonempty)
-    api = HfApi()
-    repo_url = api.create_repo(
-        name=repo_name,
-        token=HfFolder.get_token(),
-        organization=namespace,
+    HfApi().create_repo(
+        repo_id=repo_id,
         # TODO: Can we support private packages as well via a flag?
         private=False,
         exist_ok=True,
     )
-    repo = Repository(repo_local_path, clone_from=repo_url)
-    repo.git_pull(rebase=True)
-    # TODO: Are there other files we need to add here?
-    repo.lfs_track(["*.whl", "*.npz", "*strings.json", "vectors", "model"])
-    info_msg = f"Publishing to repository '{repo_name}'"
-    if namespace is not None:
-        info_msg += f" ({namespace})"
-    msg.info(info_msg)
+    msg.info(f"Publishing to repository '{repo_id}'")
 
-    # Extract information from whl file
-    with zipfile.ZipFile(whl_path, "r") as zip_ref:
-        base_name = Path(repo_name) / versioned_name
-        for file_name in zip_ref.namelist():
-            if str(Path(file_name)).startswith(str(base_name)):
-                zip_ref.extract(file_name, local_repo_path)
-    msg.good("Extracted information from .whl file")
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        repo_local_path = Path(tmpdirname) / repo_name
+        # Extract information from whl file
+        with zipfile.ZipFile(whl_path, "r") as zip_ref:
+            for file_name in zip_ref.namelist():
+                if Path(file_name) != Path(repo_name) / "__init__.py":
+                    print("result", zip_ref.extract(file_name, tmpdirname), file_name)
+        msg.good("Extracted information from .whl file")
 
-    # Move files up one directory when repo is not from HF
-    if version != "any":
+        # Some whl files might not have the version in the name (such as the ones at HF)
+        # but the version can be found in the meta.json file.
+        if version == "any":
+            version = json.load(open(Path(tmpdirname) / repo_name / "meta.json"))["version"]
+
+        # Move files up one directory
+        # The original structure is ca_core/ca_core-version/files. files are moved one level
+        # up.
+        versioned_name = repo_name + "-" + version
         extracted_dir = repo_local_path / versioned_name
         for filename in extracted_dir.iterdir():
             dst = repo_local_path / filename.name
@@ -116,26 +115,31 @@ def push(
             shutil.move(str(filename), str(dst))
         shutil.rmtree(str(extracted_dir))
 
-    # Create model card, including HF tags
-    metadata = _create_model_card(repo_name, repo_local_path)
-    msg.good("Created model card")
-    msg.text(f"{repo_name} (v{version})")
-    if verbose:
-        print(metadata)
+        # Create model card, including HF tags
+        metadata = _create_model_card(repo_name, repo_local_path)
+        msg.good("Created model card")
+        msg.text(f"{repo_name} (v{version})")
+        if verbose:
+            print(metadata)
 
-    # Remove version from whl filename
-    dst_file = repo_local_path / f"{repo_name}-any-py3-none-any.whl"
-    shutil.copyfile(str(whl_path), str(dst_file))
+        # Remove version from whl filename
+        dst_file = repo_local_path / f"{repo_name}-any-py3-none-any.whl"
+        shutil.copyfile(str(whl_path), str(dst_file))
 
-    msg.text("Pushing repository to the hub...")
-    url = repo.push_to_hub(commit_message=commit_msg)
-    url, _ = url.split("/commit/")
-    msg.good(f"Pushed repository '{repo_name}' to the hub")
-    whl_url = f"{url}/resolve/main/{repo_name}-any-py3-none-any.whl"
-    if not silent:
-        print(f"\nView your model here:\n{url}\n")
-        print(f"Install your model:\npip install {whl_url}")
-    return {"url": url, "whl_url": whl_url}
+        msg.text("Pushing repository to the hub...")
+        url = upload_folder(
+            repo_id=repo_id,
+            folder_path=repo_local_path,
+            path_in_repo="",
+            commit_message=commit_msg,
+        )
+        url, _ = url.split("/tree/")
+        msg.good(f"Pushed repository '{repo_name}' to the hub")
+        whl_url = f"{url}/resolve/main/{repo_name}-any-py3-none-any.whl"
+        if not silent:
+            print(f"\nView your model here:\n{url}\n")
+            print(f"Install your model:\npip install {whl_url}")
+        return {"url": url, "whl_url": whl_url}
 
 
 def _create_model_card(repo_name: str, repo_dir: Path) -> Dict[str, Any]:
