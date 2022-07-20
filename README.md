@@ -25,9 +25,8 @@ To check if the command has been registered successfully:
 python -m spacy huggingface-hub --help
 ```
 
-Hugging Face uses **Git Large File Storage** (LFS) to handle files larger than 10mb. You can find instructions on how to download it [here](https://git-lfs.github.com/).
 
-You can then upload any pipeline packaged with [`spacy package`](https://spacy.io/api/cli#package). Make sure to set `--build wheel` to output a binary `.whl` file. The uploader will read all metadata from the pipeline package, including the auto-generated pretty `README.md` and the model details available in the `meta.json`.
+You can upload any pipeline packaged with [`spacy package`](https://spacy.io/api/cli#package). Make sure to set `--build wheel` to output a binary `.whl` file. The uploader will read all metadata from the pipeline package, including the auto-generated pretty `README.md` and the model details available in the `meta.json`.
 
 ```bash
 huggingface-cli login
@@ -68,7 +67,6 @@ python -m spacy_huggingface_hub push [whl_path] [--org] [--msg] [--local-repo] [
 | `whl_path`           | str / `Path` | The path to the `.whl` file packaged with [`spacy package`](https://spacy.io/api/cli#package).                                |
 | `--org`, `-o`        | str          | Optional name of organization to which the pipeline should be uploaded.                                                       |
 | `--msg`, `-m`        | str          | Commit message to use for update. Defaults to `"Update spaCy pipeline"`.                                                      |
-| `--local-repo`, `-l` | str / `Path` | Local path to the model repository (will be created if it doesn't exist). Defaults to `hub` in the current working directory. |
 | `--verbose`, `-V`    | bool         | Output additional info for debugging, e.g. the full generated hub metadata.                                                   |
 
 ### Usage from Python
