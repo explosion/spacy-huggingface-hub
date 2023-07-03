@@ -168,7 +168,8 @@ def _create_model_card(repo_name: str, repo_dir: Path) -> Dict[str, Any]:
     metadata = _insert_values_as_list({}, "tags", tags)
     metadata = _insert_values_as_list(metadata, "language", lang)
     metadata = _insert_value(metadata, "license", lic)
-    metadata["model-index"] = _create_model_index(repo_name, data["performance"])
+    if "performance" in data:
+        metadata["model-index"] = _create_model_index(repo_name, data["performance"])
     metadata = yaml.dump(metadata, sort_keys=False)
     metadata_section = f"---\n{metadata}---\n"
 
